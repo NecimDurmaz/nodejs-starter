@@ -1,6 +1,11 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
-import { env } from '../env';
+import { requestHandler } from './lib/request-handler';
+import {
+  getFacebookPostEndPoint,
+  FacebookPostParams,
+} from './endpoints/get-post';
+import { facebookPostMiddleware } from './middlewares/facebook-post-middleware';
 
 export const createServer = () => {
   const app = express();
@@ -31,6 +36,24 @@ export const createServer = () => {
     res.send(`ready`);
     return;
   });
+  app.post('/test', (req, res): Promise<void> => {
+    res.send(`ready`);
+    return;
+  });
+  app.post(
+    '/facebook-post/:id',
+    requestHandler<FacebookPostParams, FacebookPostParams>(
+      getFacebookPostEndPoint,
+      [facebookPostMiddleware]
+    )
+  );
+  app.get(
+    '/facebook-post/:id',
+    requestHandler<FacebookPostParams, FacebookPostParams>(
+      getFacebookPostEndPoint,
+      [facebookPostMiddleware]
+    )
+  );
 
   return app;
 };

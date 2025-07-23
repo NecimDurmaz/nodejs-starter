@@ -116,6 +116,6 @@ logs
 .vscode/settings.json
 .vscode/tasks.json
 src/models/endpoint-models.model.ts
-src/models/error-response.model.ts
+src/models/error.response.ts
 src/models/error.model.ts
-src/models/response-model.model.ts
+src/models/response.model.ts

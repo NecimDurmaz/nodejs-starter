@@ -14,18 +14,21 @@ import {
   RequestFunction,
   RequestFunctionParams,
 } from '../models/endpoint-models.model';
-import { ResponseModelModel } from '../models/response-model.model';
-import { ErrorResponseModel } from '../models/error-response.model';
+import { ResponseModel } from '../models/response.model';
+import { ErrorResponse } from '../models/error.response';
 import { randomUUID } from 'node:crypto';
 import { ErrorCode, ErrorType } from '../models/error.model';
 import moment from 'moment';
 import { env } from '../../env';
 
-export const requestHandler = (
-  func: RequestFunction,
+export const requestHandler = <
+  RequestParamsType extends Record<string, any>,
+  RequestLocalsType extends Record<string, any>,
+>(
+  func: RequestFunction<RequestParamsType, RequestLocalsType>,
   middlewares: Array<MiddlewareFunc>
-) => {
-  return (req: Request, res: Response<any>) => {
+): ((req: Request, res: Response<any>) => void) => {
+  return (req: Request, res: Response<any, RequestLocalsType>): void => {
     const canceller = new Subject<void>();
     res.on('close', () => {
       if (res.writable) {
@@ -35,16 +38,18 @@ export const requestHandler = (
     });
 
     const timeoutDuration = env('TIMEOUTDURATION');
-    const errorObj: ErrorResponseModel[] = [];
+    const errorObj: ErrorResponse[] = [];
     const uuid = randomUUID();
     const startTime = moment();
+
     console.log(
       `[${moment().format('YYYY-MM-DD HH:mm:ss')}] [${uuid}] Request: ${req.method} ${req.url};`
     );
-    return of(null)
+
+    of(null)
       .pipe(
         map(() => {
-          const params: RequestFunctionParams = {
+          const params: RequestFunctionParams<RequestParamsType> = {
             ...req.query,
             ...req.params,
             ...req.body,
@@ -70,82 +75,90 @@ export const requestHandler = (
               );
           }
         }),
-        switchMap((params: RequestFunctionParams) => {
-          return func(params, errorObj);
+        switchMap((params: RequestFunctionParams<RequestParamsType>) => {
+          return func(params, errorObj, res.locals);
         }),
         timeout(timeoutDuration),
-        catchError(e => {
-          let responseObj: ResponseModelModel;
-          if (e instanceof TimeoutError) {
-            errorObj.push({
-              status: ErrorCode.Timeout,
-              name: ErrorType.TimeoutError,
-              message:
-                'Request took too much time, please check parameters and try again.',
-            });
-            responseObj = {
-              success: false,
-              status: ErrorCode.Timeout,
-              body: errorObj[0],
-            };
-          } else if (e instanceof ErrorResponseModel) {
-            errorObj.push({
-              status: e.status ?? ErrorCode.BadRequest,
-              message: e.message,
-              name: e.name ?? ErrorType.BadRequest,
-            });
-
-            responseObj = {
-              status: e.status,
-              body: errorObj,
-              success: false,
-            };
-          } else if (e instanceof ResponseModelModel) {
-            responseObj = {
-              status: e.status,
-              body: e.body,
-              success: e.success,
-            };
-          } else {
-            if (e instanceof Error) {
+        catchError(
+          (e: ErrorResponse | ResponseModel | TimeoutError | Error | any) => {
+            let responseObj: ResponseModel;
+            if (e instanceof TimeoutError) {
               errorObj.push({
-                name: e.name,
-                status: ErrorCode.InternalServerError,
-                message: e?.message ?? 'Unknown Error',
+                status: ErrorCode.Timeout,
+                name: ErrorType.TimeoutError,
+                message:
+                  'Request took too much time, please check parameters and try again.',
               });
               responseObj = {
-                status: ErrorCode.InternalServerError,
-                body: errorObj,
                 success: false,
+                status: ErrorCode.Timeout,
+                data: null,
+                errorObj,
+              };
+            } else if (e instanceof ErrorResponse) {
+              errorObj.push({
+                status: e.status ?? ErrorCode.BadRequest,
+                message: e.message,
+                name: e.name ?? ErrorType.BadRequest,
+              });
+
+              responseObj = {
+                status: e.status,
+                data: null,
+                errorObj,
+                success: false,
+              };
+            } else if (e instanceof ResponseModel) {
+              responseObj = {
+                status: e.status,
+                data: e.data,
+                success: e.success,
               };
             } else {
-              errorObj.push({
-                name: ErrorType.InternalServerError,
-                status: ErrorCode.InternalServerError,
-                message: (e as any)?.message ?? 'Unknown Error',
-              });
-              responseObj = {
-                status: ErrorCode.InternalServerError,
-                body: errorObj,
-                success: false,
-              };
+              if (e instanceof Error) {
+                errorObj.push({
+                  name: e.name,
+                  status: ErrorCode.InternalServerError,
+                  message: e?.message ?? 'Unknown Error',
+                });
+                responseObj = {
+                  success: false,
+                  status: ErrorCode.InternalServerError,
+                  errorObj,
+                  data: null,
+                };
+              } else {
+                errorObj.push({
+                  name: ErrorType.InternalServerError,
+                  status: ErrorCode.InternalServerError,
+                  message: (e as any)?.message ?? 'Unknown Error',
+                });
+                responseObj = {
+                  success: false,
+                  status: ErrorCode.InternalServerError,
+                  errorObj,
+                  data: null,
+                };
+              }
+
+              console.error(
+                `${req.route.path}  Error: `,
+                e,
+                JSON.stringify({
+                  url: req.url,
+                  query: req.query,
+                  param: req.params,
+                })
+              );
             }
 
-            console.error(
-              `${req.route.path}  Error: `,
-              e,
-              JSON.stringify({
-                url: req.url,
-                query: req.query,
-                param: req.params,
-              })
-            );
+            return of(responseObj);
           }
-
-          return of(responseObj);
-        }),
-        map((response: ResponseModelModel) => {
-          res.status(response.status).json(response.body);
+        ),
+        map((response: ResponseModel) => {
+          res
+            .status(response.status ?? (response.success ? 200 : 400))
+            .json(response);
           return null;
         }),
         takeUntil(canceller),

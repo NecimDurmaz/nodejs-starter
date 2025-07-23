@@ -1,10 +1,10 @@
 import { ErrorCode } from './error.model';
-import { ErrorResponseModel } from './error.response.model';
+import { ErrorResponse } from './errorResponse';
 
 export class ResponseModel {
   status?: ErrorCode;
   data: Record<string, any>;
-  errorObj?: ErrorResponseModel[];
+  errorObj?: ErrorResponse[];
   success: boolean;
   constructor({
     status,
@@ -15,7 +15,7 @@ export class ResponseModel {
     status?: ErrorCode;
     data?: Record<string, any>;
     success?: boolean;
-    errorObj?: ErrorResponseModel[];
+    errorObj?: ErrorResponse[];
   }) {
     this.status = status;
     this.data = data;

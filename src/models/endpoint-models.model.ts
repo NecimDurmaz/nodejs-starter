@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { IncomingHttpHeaders } from 'node:http';
-import { ErrorResponseModel } from './error.response.model';
+import { ErrorResponse } from './errorResponse';
 import { ResponseModel } from './response.model';
 
 export type MiddlewareFunc = (
@@ -14,7 +14,7 @@ export type RequestFunction<
   RequestLocalsType extends Record<string, any>,
 > = (
   paramsObj: RequestFunctionParams<RequestParamsType>,
-  errorObj: ErrorResponseModel[],
+  errorObj: ErrorResponse[],
   locals: RequestLocalsType
 ) => Observable<ResponseModel>;
 

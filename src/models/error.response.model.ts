@@ -1,6 +1,6 @@
 import { ErrorCode } from './error.model';
 
-export class ErrorResponse extends Error {
+export class ErrorResponseModel extends Error {
   status: ErrorCode;
   message: string;
 

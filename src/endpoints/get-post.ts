@@ -2,7 +2,7 @@ import {
   RequestFunction,
   RequestFunctionParams,
 } from '../models/endpoint-models.model';
-import { ErrorResponse } from '../models/error.response';
+import { ErrorResponseModel } from '../models/error.response.model';
 import { Observable, of } from 'rxjs';
 import { ResponseModel } from '../models/response.model';
 export class FacebookPostParams {
@@ -13,7 +13,7 @@ export const getFacebookPostEndPoint: RequestFunction<
   FacebookPostParams
 > = (
   paramsObj: RequestFunctionParams<FacebookPostParams>,
-  errorObj: ErrorResponse[],
+  errorObj: ErrorResponseModel[],
   locals: FacebookPostParams
 ): Observable<ResponseModel> => {
   return of({

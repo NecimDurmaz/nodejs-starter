@@ -115,7 +115,3 @@ logs
 .vscode/launch.json
 .vscode/settings.json
 .vscode/tasks.json
-src/models/endpoint-models.model.ts
-src/models/error.response.ts
-src/models/error.model.ts
-src/models/response.model.ts

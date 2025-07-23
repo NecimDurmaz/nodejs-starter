@@ -110,3 +110,12 @@ logs
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.DS_Store
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
+src/models/endpoint-models.model.ts
+src/models/error-response.model.ts
+src/models/error.model.ts
+src/models/response-model.model.ts

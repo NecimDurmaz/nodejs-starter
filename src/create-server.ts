@@ -42,17 +42,11 @@ export const createServer = () => {
   });
   app.post(
     '/facebook-post/:id',
-    requestHandler<FacebookPostParams, FacebookPostParams>(
-      getFacebookPostEndPoint,
-      [facebookPostMiddleware]
-    )
+    requestHandler(getFacebookPostEndPoint, [facebookPostMiddleware])
   );
   app.get(
     '/facebook-post/:id',
-    requestHandler<FacebookPostParams, FacebookPostParams>(
-      getFacebookPostEndPoint,
-      [facebookPostMiddleware]
-    )
+    requestHandler(getFacebookPostEndPoint, [facebookPostMiddleware])
   );
 
   return app;

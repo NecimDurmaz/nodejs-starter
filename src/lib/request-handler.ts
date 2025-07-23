@@ -20,14 +20,16 @@ import { randomUUID } from 'node:crypto';
 import { ErrorCode, ErrorType } from '../models/error.model';
 import moment from 'moment';
 import { env } from '../../env';
-
-export const requestHandler = <
-  RequestParamsType extends Record<string, any>,
-  RequestLocalsType extends Record<string, any>,
->(
-  func: RequestFunction<RequestParamsType, RequestLocalsType>,
+type ExtractRequestTypes<T> =
+  T extends RequestFunction<infer P, infer L> ? [P, L] : never;
+export const requestHandler = <Func extends RequestFunction<any, any>>(
+  func: Func,
   middlewares: Array<MiddlewareFunc>
 ): ((req: Request, res: Response<any>) => void) => {
+  type Extracted = ExtractRequestTypes<Func>;
+  type RequestParamsType = Extracted[0];
+  type RequestLocalsType = Extracted[1];
+
   return (req: Request, res: Response<any, RequestLocalsType>): void => {
     const canceller = new Subject<void>();
     res.on('close', () => {

@@ -64,7 +64,7 @@ export class ConsoleColor {
     const parts = [content, ...rest].map(part =>
       part instanceof ConsoleColor ? part.toString() : part
     );
-    return parts.join(' ');
+    return parts.join('');
   }
 
   // Text colors
@@ -88,8 +88,8 @@ export class ConsoleColor {
   }
 
   // Apply all styles and reset at the end
-  toString(): string {
-    return `${this.styles.join('')}${this.content}${ConsoleColor.codes.reset}`;
+  toString(reset = true): string {
+    return `${this.styles.join('')}${this.content}${reset ? ConsoleColor.codes.reset : ''}`;
   }
 
   // Static color methods
@@ -98,6 +98,9 @@ export class ConsoleColor {
     ...rest: Array<string | ConsoleColor>
   ): string {
     return new ConsoleColor(content, ...rest).color('black');
+  }
+  static reset(): string {
+    return ConsoleColor.codes.reset;
   }
   static red(
     content: string | ConsoleColor,
@@ -246,6 +249,7 @@ export class ConsoleColor {
       backgroundColor?: ColorName;
       color?: ColorName;
       styles?: StyleName[];
+      reset?: boolean;
     },
     content: string | ConsoleColor,
     ...rest: Array<string | ConsoleColor>
@@ -271,6 +275,6 @@ export class ConsoleColor {
       });
     }
 
-    return instance.toString();
+    return instance.toString(options.reset);
   }
 }

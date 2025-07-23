@@ -2,9 +2,9 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { requestHandler } from './lib/request-handler';
 import {
-  getFacebookPostEndPoint,
+  getFacebookPostEndpoint,
   FacebookPostParams,
-} from './endpoints/get-post';
+} from './endpoints/get-facebook-post-endpoint';
 import { facebookPostMiddleware } from './middlewares/facebook-post-middleware';
 
 export const createServer = () => {
@@ -42,11 +42,11 @@ export const createServer = () => {
   });
   app.post(
     '/facebook-post/:id',
-    requestHandler(getFacebookPostEndPoint, [facebookPostMiddleware])
+    requestHandler(getFacebookPostEndpoint, [facebookPostMiddleware])
   );
   app.get(
     '/facebook-post/:id',
-    requestHandler(getFacebookPostEndPoint, [facebookPostMiddleware])
+    requestHandler(getFacebookPostEndpoint, [facebookPostMiddleware])
   );
 
   return app;

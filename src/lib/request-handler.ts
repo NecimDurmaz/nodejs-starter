@@ -15,7 +15,7 @@ import {
   RequestFunctionParams,
 } from '../models/endpoint-models.model';
 import { ResponseModel } from '../models/response.model';
-import { ErrorResponse } from '../models/errorResponse';
+import { ErrorResponseModel } from '../models/error-response.model';
 import { randomUUID } from 'node:crypto';
 import { ErrorCode, ErrorType } from '../models/error.model';
 import moment from 'moment';
@@ -40,7 +40,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
     });
 
     const timeoutDuration = env('TIMEOUTDURATION');
-    const errorObj: ErrorResponse[] = [];
+    const errorObj: ErrorResponseModel[] = [];
     const uuid = randomUUID();
     const startTime = moment();
 
@@ -82,7 +82,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
         }),
         timeout(timeoutDuration),
         catchError(
-          (e: ErrorResponse | ResponseModel | TimeoutError | Error | any) => {
+          (e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any) => {
             let responseObj: ResponseModel;
             if (e instanceof TimeoutError) {
               errorObj.push({
@@ -97,7 +97,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                 data: null,
                 errorObj,
               };
-            } else if (e instanceof ErrorResponse) {
+            } else if (e instanceof ErrorResponseModel) {
               errorObj.push({
                 status: e.status ?? ErrorCode.BadRequest,
                 message: e.message,

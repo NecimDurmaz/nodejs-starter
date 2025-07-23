@@ -1,11 +1,13 @@
 import { createServer } from './create-server';
 import { env } from '../env';
 import { ConsoleColor } from './helpers/console-color';
+import { customConsole } from './helpers/custom-console';
 const PORT = env('PORT');
 createServer().listen(PORT, () =>
-  console.log(
+  customConsole(
+    'main.ts createServer listen',
     ConsoleColor.bgGreen(
-      `Main Server Started at port ${ConsoleColor.custom(
+      `port: ${ConsoleColor.custom(
         { backgroundColor: 'black', styles: ['bold', 'underline'] },
         PORT.toString()
       )}`

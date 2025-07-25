@@ -13,7 +13,7 @@ export const getFacebookPostEndpoint: RequestFunction<
   FacebookPostParams
 > = (
   paramsObj: RequestFunctionParams<FacebookPostParams>,
-  errorObj: ErrorResponseModel[],
+  errorList: ErrorResponseModel[],
   locals: FacebookPostParams
 ): Observable<ResponseModel> => {
   return of({

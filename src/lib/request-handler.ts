@@ -40,7 +40,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
     });
 
     const timeoutDuration = env('TIMEOUTDURATION');
-    const errorObj: ErrorResponseModel[] = [];
+    const errorList: ErrorResponseModel[] = [];
     const uuid = randomUUID();
     const startTime = moment();
 
@@ -78,14 +78,14 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
           }
         }),
         switchMap((params: RequestFunctionParams<RequestParamsType>) => {
-          return func(params, errorObj, res.locals);
+          return func(params, errorList, res.locals);
         }),
         timeout(timeoutDuration),
         catchError(
           (e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any) => {
             let responseObj: ResponseModel;
             if (e instanceof TimeoutError) {
-              errorObj.push({
+              errorList.push({
                 status: ErrorCode.Timeout,
                 name: ErrorType.TimeoutError,
                 message:
@@ -95,10 +95,10 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                 success: false,
                 status: ErrorCode.Timeout,
                 data: null,
-                errorObj,
+                errorList,
               };
             } else if (e instanceof ErrorResponseModel) {
-              errorObj.push({
+              errorList.push({
                 status: e.status ?? ErrorCode.BadRequest,
                 message: e.message,
                 name: e.name ?? ErrorType.BadRequest,
@@ -107,7 +107,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
               responseObj = {
                 status: e.status,
                 data: null,
-                errorObj,
+                errorList,
                 success: false,
               };
             } else if (e instanceof ResponseModel) {
@@ -118,7 +118,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
               };
             } else {
               if (e instanceof Error) {
-                errorObj.push({
+                errorList.push({
                   name: e.name,
                   status: ErrorCode.InternalServerError,
                   message: e?.message ?? 'Unknown Error',
@@ -126,11 +126,11 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                 responseObj = {
                   success: false,
                   status: ErrorCode.InternalServerError,
-                  errorObj,
+                  errorList,
                   data: null,
                 };
               } else {
-                errorObj.push({
+                errorList.push({
                   name: ErrorType.InternalServerError,
                   status: ErrorCode.InternalServerError,
                   message: (e as any)?.message ?? 'Unknown Error',
@@ -138,7 +138,7 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                 responseObj = {
                   success: false,
                   status: ErrorCode.InternalServerError,
-                  errorObj,
+                  errorList,
                   data: null,
                 };
               }

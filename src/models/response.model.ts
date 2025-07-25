@@ -4,22 +4,22 @@ import { ErrorResponseModel } from './error-response.model';
 export class ResponseModel {
   status?: ErrorCode;
   data: Record<string, any>;
-  errorObj?: ErrorResponseModel[];
+  errorList?: ErrorResponseModel[];
   success: boolean;
   constructor({
     status,
     data,
     success,
-    errorObj,
+    errorList,
   }: {
     status?: ErrorCode;
     data?: Record<string, any>;
     success?: boolean;
-    errorObj?: ErrorResponseModel[];
+    errorList?: ErrorResponseModel[];
   }) {
     this.status = status;
     this.data = data;
     this.success = success;
-    this.errorObj = errorObj || [];
+    this.errorList = errorList || [];
   }
 }

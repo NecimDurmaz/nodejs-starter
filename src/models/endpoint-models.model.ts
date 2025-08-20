@@ -14,7 +14,6 @@ export type RequestFunction<
   RequestLocalsType extends Record<string, any>,
 > = (
   paramsObj: RequestFunctionParams<RequestParamsType>,
-  errorList: ErrorResponseModel[],
   locals: RequestLocalsType
 ) => Observable<ResponseModel>;
 

@@ -40,7 +40,6 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
     });
 
     const timeoutDuration = env('TIMEOUTDURATION');
-    const errorList: ErrorResponseModel[] = [];
     const uuid = randomUUID();
     const startTime = moment();
 
@@ -78,36 +77,25 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
           }
         }),
         switchMap((params: RequestFunctionParams<RequestParamsType>) => {
-          return func(params, errorList, res.locals);
+          return func(params,  res.locals);
         }),
         timeout(timeoutDuration),
         catchError(
           (e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any) => {
             let responseObj: ResponseModel;
             if (e instanceof TimeoutError) {
-              errorList.push({
-                status: ErrorCode.Timeout,
-                name: ErrorType.TimeoutError,
-                message:
-                  'Request took too much time, please check parameters and try again.',
-              });
+
               responseObj = {
                 success: false,
                 status: ErrorCode.Timeout,
                 data: null,
-                errorList,
-              };
+               };
             } else if (e instanceof ErrorResponseModel) {
-              errorList.push({
-                status: e.status ?? ErrorCode.BadRequest,
-                message: e.message,
-                name: e.name ?? ErrorType.BadRequest,
-              });
+
 
               responseObj = {
                 status: e.status,
                 data: null,
-                errorList,
                 success: false,
               };
             } else if (e instanceof ResponseModel) {
@@ -118,27 +106,17 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
               };
             } else {
               if (e instanceof Error) {
-                errorList.push({
-                  name: e.name,
-                  status: ErrorCode.InternalServerError,
-                  message: e?.message ?? 'Unknown Error',
-                });
+
                 responseObj = {
                   success: false,
                   status: ErrorCode.InternalServerError,
-                  errorList,
                   data: null,
                 };
               } else {
-                errorList.push({
-                  name: ErrorType.InternalServerError,
-                  status: ErrorCode.InternalServerError,
-                  message: (e as any)?.message ?? 'Unknown Error',
-                });
+
                 responseObj = {
                   success: false,
                   status: ErrorCode.InternalServerError,
-                  errorList,
                   data: null,
                 };
               }

@@ -15,9 +15,8 @@ import {
   RequestFunctionParams,
 } from '../models/endpoint-models.model';
 import { ResponseModel } from '../models/response.model';
-import { ErrorResponseModel } from '../models/error-response.model';
+import { ErrorCode, ErrorResponseModel } from '../models/error-response.model';
 import { randomUUID } from 'node:crypto';
-import { ErrorCode, ErrorType } from '../models/error.model';
 import moment from 'moment';
 import { env } from '../../env';
 type ExtractRequestTypes<T> =
@@ -77,50 +76,51 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
           }
         }),
         switchMap((params: RequestFunctionParams<RequestParamsType>) => {
-          return func(params,  res.locals);
+          return func(params, res.locals);
         }),
         timeout(timeoutDuration),
         catchError(
-          (e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any) => {
+          (
+            e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any
+          ) => {
             let responseObj: ResponseModel;
             if (e instanceof TimeoutError) {
-
               responseObj = {
                 success: false,
                 status: ErrorCode.Timeout,
                 data: null,
-               };
+                errorObj: new ErrorResponseModel(
+                  ErrorCode.Timeout,
+                  'Request timeout',
+                  'Request timeout'
+                ),
+              };
             } else if (e instanceof ErrorResponseModel) {
-
-
               responseObj = {
                 status: e.status,
                 data: null,
                 success: false,
+                errorObj: e,
               };
             } else if (e instanceof ResponseModel) {
               responseObj = {
                 status: e.status,
                 data: e.data,
                 success: e.success,
+                errorObj: e.errorObj ?? null,
+              };
+            } else if (e instanceof Error) {
+              responseObj = {
+                success: false,
+                status: ErrorCode.InternalServerError,
+                data: null,
+                errorObj: new ErrorResponseModel(
+                  ErrorCode.InternalServerError,
+                  e.message,
+                  e.stack ?? 'Internal server error'
+                ),
               };
             } else {
-              if (e instanceof Error) {
-
-                responseObj = {
-                  success: false,
-                  status: ErrorCode.InternalServerError,
-                  data: null,
-                };
-              } else {
-
-                responseObj = {
-                  success: false,
-                  status: ErrorCode.InternalServerError,
-                  data: null,
-                };
-              }
-
               console.error(
                 `${req.route.path}  Error: `,
                 e,
@@ -130,6 +130,16 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                   param: req.params,
                 })
               );
+              responseObj = {
+                success: false,
+                status: ErrorCode.InternalServerError,
+                data: null,
+                errorObj: new ErrorResponseModel(
+                  ErrorCode.InternalServerError,
+                  'Unknown error',
+                  'Unknown error'
+                ),
+              };
             }
 
             return of(responseObj);

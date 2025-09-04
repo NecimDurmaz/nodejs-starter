@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { ErrorResponseModel } from '../models/error-response.model';
+import { FacebookMissingParamError } from '../models/error.model';
 
 export const facebookPostMiddleware: MiddlewareFunc = (
   req: Request,
@@ -20,7 +21,7 @@ export const facebookPostMiddleware: MiddlewareFunc = (
       if (!Number.isNaN(Number(params.id))) {
         res.locals.id = params.id;
       } else {
-        throw new ErrorResponseModel(400, 'Id is required');
+        throw new FacebookMissingParamError( 'Id');
       }
       return null;
     })

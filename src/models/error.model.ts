@@ -1,11 +1,7 @@
-export enum ErrorCode {
-  Timeout = 408,
-  BadRequest = 400,
-  InternalServerError = 500,
-}
+import { ErrorCode, errorMessages, ErrorResponseModel } from './error-response.model';
 
-export enum ErrorType {
-  InternalServerError = 'InternalServer',
-  TimeoutError = 'Timeout',
-  BadRequest = 'BadRequest',
+export class FacebookMissingParamError extends ErrorResponseModel {
+  constructor(paramName: string) {
+    super(ErrorCode.FacebookMissingParameters, `Missing parameter: ${paramName}`, errorMessages.FacebookMissingParameters);
+  }
 }

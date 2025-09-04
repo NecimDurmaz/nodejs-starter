@@ -84,7 +84,22 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
             e: ErrorResponseModel | ResponseModel | TimeoutError | Error | any
           ) => {
             let responseObj: ResponseModel;
-            if (e instanceof TimeoutError) {
+
+            if (e instanceof ResponseModel) {
+              responseObj = {
+                status: e.status,
+                data: e.data,
+                success: e.success,
+                errorObj: e.errorObj ?? null,
+              };
+            } else if (e instanceof ErrorResponseModel) {
+              responseObj = {
+                status: e.status,
+                data: null,
+                success: false,
+                errorObj: e,
+              };
+            } else if (e instanceof TimeoutError) {
               responseObj = {
                 success: false,
                 status: ErrorCode.Timeout,
@@ -94,20 +109,6 @@ export const requestHandler = <Func extends RequestFunction<any, any>>(
                   'Request timeout',
                   'Request timeout'
                 ),
-              };
-            } else if (e instanceof ErrorResponseModel) {
-              responseObj = {
-                status: e.status,
-                data: null,
-                success: false,
-                errorObj: e,
-              };
-            } else if (e instanceof ResponseModel) {
-              responseObj = {
-                status: e.status,
-                data: e.data,
-                success: e.success,
-                errorObj: e.errorObj ?? null,
               };
             } else if (e instanceof Error) {
               responseObj = {
